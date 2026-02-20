@@ -11,7 +11,7 @@ import cloudinary from '../utils/cloudinary'
 import getBase64ImageUrl from '../utils/generateBlurPlaceholder'
 import type { ImageProps } from '../utils/types'
 import { useLastViewedPhoto } from '../utils/useLastViewedPhoto'
-console.log('cloud_name=', process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME)
+
 const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
   const router = useRouter()
   const { photoId } = router.query
@@ -112,15 +112,14 @@ const Home: NextPage = ({ images }: { images: ImageProps[] }) => {
 export default Home
 
 export async function getStaticProps() {
-  const results = await cloudinary.v2.search
-    // .expression(`folder:${process.env.CLOUDINARY_FOLDER}/*`)
-    .expression('resource_type:image')
-    .sort_by('public_id', 'desc')
-    .max_results(400)
-    .execute()
+  const results = await cloudinary.search
+  .expression(`folder:${process.env.CLOUDINARY_FOLDER}/*`)
+  .sort_by('public_id', 'desc')
+  .max_results(400)
+  .execute()
+
   let reducedResults: ImageProps[] = []
-  console.log('total_count:', results.total_count)
-  console.log('first public_id:', results.resources?.[0]?.public_id)
+
   let i = 0
   for (let result of results.resources) {
     reducedResults.push({
