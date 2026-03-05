@@ -1,9 +1,11 @@
+'use client'
+
 import Image from "next/image";
-import { useRouter } from "next/router";
+import { useRouter } from "next/navigation";
 import useKeypress from "react-use-keypress";
-import type { ImageProps } from "../utils/types";
-import { useLastViewedPhoto } from "../utils/useLastViewedPhoto";
-import SharedModal from "./SharedModal";
+import type { ImageProps } from "@/utils/types";
+import { useLastViewedPhoto } from "@/utils/useLastViewedPhoto";
+import SharedModal from "@/components/SharedModal";
 
 export default function Carousel({
   index,
@@ -17,7 +19,7 @@ export default function Carousel({
 
   function closeModal() {
     setLastViewedPhoto(currentPhoto.id);
-    router.push("/", undefined, { shallow: true });
+    router.push("/");
   }
 
   function changePhotoId(newVal: number) {

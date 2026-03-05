@@ -1,10 +1,12 @@
+'use client'
+
 import { Dialog } from "@headlessui/react";
-import { motion } from "framer-motion";
-import { useRouter } from "next/router";
-import { useRef, useState } from "react";
+import { motion } from "motion/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { useState } from "react";
 import useKeypress from "react-use-keypress";
-import type { ImageProps } from "../utils/types";
-import SharedModal from "./SharedModal";
+import type { ImageProps } from "@/utils/types";
+import SharedModal from "@/components/SharedModal";
 
 export default function Modal({
   images,
@@ -13,18 +15,18 @@ export default function Modal({
   images: ImageProps[];
   onClose?: () => void;
 }) {
-  let overlayRef = useRef();
   const router = useRouter();
+  const searchParams = useSearchParams();
 
-  const { photoId } = router.query;
+  const photoId = searchParams.get("photoId");
   let index = Number(photoId);
 
   const [direction, setDirection] = useState(0);
   const [curIndex, setCurIndex] = useState(index);
 
   function handleClose() {
-    router.push("/", undefined, { shallow: true });
-    onClose();
+    router.push("/");
+    onClose?.();
   }
 
   function changePhotoId(newVal: number) {
@@ -34,13 +36,7 @@ export default function Modal({
       setDirection(-1);
     }
     setCurIndex(newVal);
-    router.push(
-      {
-        query: { photoId: newVal },
-      },
-      `/p/${newVal}`,
-      { shallow: true },
-    );
+    router.push(`/?photoId=${newVal}`);
   }
 
   useKeypress("ArrowRight", () => {
@@ -60,16 +56,14 @@ export default function Modal({
       static
       open={true}
       onClose={handleClose}
-      initialFocus={overlayRef}
       className="fixed inset-0 z-10 flex items-center justify-center"
     >
-      <Dialog.Overlay
-        ref={overlayRef}
-        as={motion.div}
+      <motion.div
         key="backdrop"
         className="fixed inset-0 z-30 bg-black/70 backdrop-blur-2xl"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
+        onClick={handleClose}
       />
       <SharedModal
         index={curIndex}
