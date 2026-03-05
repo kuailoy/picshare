@@ -57,7 +57,7 @@ export const getStaticProps: GetStaticProps = async context => {
 }
 
 export async function getStaticPaths() {
-  const results = await cloudinary.v2.search
+  const results = await cloudinary.search
     // .expression(`folder:${process.env.CLOUDINARY_FOLDER}/*`)
     .expression(`resource_type:image AND folder:${process.env.CLOUDINARY_FOLDER}/**`)
     // .expression('resource_type:image')
