@@ -3,7 +3,7 @@
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import useKeypress from "react-use-keypress";
-import type { ImageProps } from "@/utils/types";
+import type { GalleryImage } from "@/types";
 import { useLastViewedPhoto } from "@/utils/useLastViewedPhoto";
 import SharedModal from "@/components/SharedModal";
 
@@ -12,7 +12,7 @@ export default function Carousel({
   currentPhoto,
 }: {
   index: number;
-  currentPhoto: ImageProps;
+  currentPhoto: GalleryImage;
 }) {
   const router = useRouter();
   const [, setLastViewedPhoto] = useLastViewedPhoto();

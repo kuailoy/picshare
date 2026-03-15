@@ -6,14 +6,14 @@ import { Suspense, useEffect, useRef } from 'react'
 import { ArrowUpTrayIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import Bridge from '@/components/Icons/Bridge'
 import Modal from '@/components/Modal'
-import type { ImageProps } from '@/utils/types'
+import type { GalleryImage } from '@/types'
 import { useLastViewedPhoto } from '@/utils/useLastViewedPhoto'
 
 export default function Gallery({
   images,
   photoId,
 }: {
-  images: ImageProps[]
+  images: GalleryImage[]
   photoId?: string
 }) {
   const [lastViewedPhoto, setLastViewedPhoto] = useLastViewedPhoto()

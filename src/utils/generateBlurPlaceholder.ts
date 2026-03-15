@@ -1,9 +1,9 @@
-import type { ImageProps } from "@/utils/types";
+import type { GalleryImage } from "@/types";
 
-const cache = new Map<ImageProps, string>();
+const cache = new Map<GalleryImage, string>();
 
 export default async function getBase64ImageUrl(
-  image: ImageProps,
+  image: GalleryImage,
 ): Promise<string> {
   let url = cache.get(image);
   if (url) {

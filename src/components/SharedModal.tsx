@@ -13,7 +13,8 @@ import { useSwipeable } from "react-swipeable";
 import { variants } from "@/utils/animationVariants";
 import downloadPhoto from "@/utils/downloadPhoto";
 import { range } from "@/utils/range";
-import type { ImageProps, SharedModalProps } from "@/utils/types";
+import type { GalleryImage } from "@/types";
+import type { SharedModalProps } from "@/utils/types";
 import Twitter from "@/components/Icons/Twitter";
 
 export default function SharedModal({
@@ -27,7 +28,7 @@ export default function SharedModal({
 }: SharedModalProps) {
   const [loaded, setLoaded] = useState(false);
 
-  let filteredImages = images?.filter((img: ImageProps) =>
+  let filteredImages = images?.filter((img: GalleryImage) =>
     range(index - 15, index + 15).includes(img.id),
   );
 

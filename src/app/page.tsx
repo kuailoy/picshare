@@ -1,6 +1,6 @@
 import cloudinary from '@/utils/cloudinary'
 import getBase64ImageUrl from '@/utils/generateBlurPlaceholder'
-import type { ImageProps } from '@/utils/types'
+import type { GalleryImage } from '@/types'
 import Gallery from '@/components/Gallery'
 
 export default async function Home({
@@ -16,7 +16,7 @@ export default async function Home({
     .max_results(400)
     .execute()
 
-  let reducedResults: ImageProps[] = []
+  let reducedResults: GalleryImage[] = []
 
   let i = 0
   for (let result of results.resources) {
@@ -30,7 +30,7 @@ export default async function Home({
     i++
   }
 
-  const blurImagePromises = results.resources.map((image: ImageProps) => {
+  const blurImagePromises = results.resources.map((image: GalleryImage) => {
     return getBase64ImageUrl(image)
   })
   const imagesWithBlurDataUrls = await Promise.all(blurImagePromises)

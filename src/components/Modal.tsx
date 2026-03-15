@@ -5,14 +5,14 @@ import { motion } from "motion/react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useState } from "react";
 import useKeypress from "react-use-keypress";
-import type { ImageProps } from "@/utils/types";
+import type { GalleryImage } from "@/types";
 import SharedModal from "@/components/SharedModal";
 
 export default function Modal({
   images,
   onClose,
 }: {
-  images: ImageProps[];
+  images: GalleryImage[];
   onClose?: () => void;
 }) {
   const router = useRouter();

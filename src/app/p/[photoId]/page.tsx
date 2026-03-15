@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import Carousel from '@/components/Carousel'
 import getResults from '@/utils/cachedImages'
 import getBase64ImageUrl from '@/utils/generateBlurPlaceholder'
-import type { ImageProps } from '@/utils/types'
+import type { GalleryImage } from '@/types'
 
 export async function generateMetadata({
   params,
@@ -29,7 +29,7 @@ export default async function PhotoPage({
   const { photoId } = await params
   const results = await getResults()
 
-  let reducedResults: ImageProps[] = []
+  let reducedResults: GalleryImage[] = []
   let i = 0
   for (let result of results.resources) {
     reducedResults.push({
