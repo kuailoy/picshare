@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense, useEffect, useRef } from 'react'
+import { ArrowUpTrayIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import Bridge from '@/components/Icons/Bridge'
 import Modal from '@/components/Modal'
 import type { ImageProps } from '@/utils/types'
@@ -40,15 +41,19 @@ export default function Gallery({
           </Suspense>
         )}
         <div className="columns-1 gap-4 sm:columns-2 xl:columns-3 2xl:columns-4">
-          <div className="after:content relative mb-5 flex h-[629px] flex-col items-center justify-end gap-4 overflow-hidden rounded-lg bg-white/10 px-6 pb-16 pt-64 text-center text-white shadow-highlight after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight lg:pt-0">
+          <div className="after:content relative mb-5 flex h-[629px] flex-col items-center justify-end gap-4 overflow-hidden rounded-lg bg-white/10 px-6 pb-16 pt-64 text-center shadow-highlight after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight lg:pt-0">
             <div className="absolute inset-0 flex items-center justify-center opacity-20">
               <span className="flex max-h-full max-w-full items-center justify-center">
                 <Bridge />
               </span>
               <span className="absolute bottom-0 left-0 right-0 h-100 bg-linear-to-b from-black/0 via-black to-black"></span>
             </div>
-            <h1 className="mb-4 mt-8 text-base font-bold uppercase tracking-widest">2022 Event Photos</h1>
-            <p className="max-w-[40ch] text-white/75 sm:max-w-[32ch]">Our incredible Next.js community got together in San Francisco for our first ever in-person conference!</p>
+            <div className="flex gap-4 absolute z-10 top-0 right-0 p-4">
+                <ArrowUpTrayIcon className="h-6 w-6 hover:cursor-pointer" />
+                <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
+            </div>
+            <h1 className="mb-4 mt-8 text-base font-bold uppercase tracking-widest">Photo Session Name</h1>
+            <p className="max-w-[40ch] sm:max-w-[32ch]">Photo Session Description</p>
           </div>
           {images.map(({ id, public_id, format, blurDataUrl }) => (
             <Link
@@ -75,20 +80,10 @@ export default function Gallery({
           ))}
         </div>
       </main>
-      <footer className="p-6 text-center text-white/80 sm:p-12">
-        Thank you to{' '}
-        <a href="https://edelsonphotography.com/" target="_blank" className="font-semibold hover:text-white" rel="noreferrer">
-          Josh Edelson
+      <footer className="p-6 text-center sm:p-12">
+        <a href="https://edelsonphotography.com/" target="_blank" className="font-semibold" rel="noreferrer">
+          Josh Edelson Photography
         </a>
-        ,{' '}
-        <a href="https://www.newrevmedia.com/" target="_blank" className="font-semibold hover:text-white" rel="noreferrer">
-          Jenny Morgan
-        </a>
-        , and{' '}
-        <a href="https://www.garysextonphotography.com/" target="_blank" className="font-semibold hover:text-white" rel="noreferrer">
-          Gary Sexton
-        </a>{' '}
-        for the pictures.
       </footer>
     </>
   )
