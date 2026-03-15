@@ -14,8 +14,18 @@ import { variants } from "@/utils/animationVariants";
 import downloadPhoto from "@/utils/downloadPhoto";
 import { range } from "@/utils/range";
 import type { GalleryImage } from "@/types";
-import type { SharedModalProps } from "@/utils/types";
 import Twitter from "@/components/Icons/Twitter";
+
+export interface SharedModalProps {
+  index: number;
+  images?: GalleryImage[];
+  currentPhoto?: GalleryImage;
+  changePhotoId: (newVal: number) => void;
+  closeModal: () => void;
+  navigation: boolean;
+  direction?: number;
+}
+
 
 export default function SharedModal({
   index,
