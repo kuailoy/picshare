@@ -1,5 +1,9 @@
 # PicShare
 
+👋 **Read more details about Project Design and Development here [Devleopment-Notes](./Development-Notes.md)**
+
+## 💡 Objective
+
 A lightweight photo sharing and collaborative selection platform.
 
 PicShare is a personal project exploring a focused scenario:
@@ -13,7 +17,6 @@ Download selected results.
 Not a cloud drive.
 Not a social network.
 A focused photo sharing and collaborative selection platform.
-
 
 ## 🏗 Core Design
 
