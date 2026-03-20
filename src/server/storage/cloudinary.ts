@@ -10,14 +10,15 @@ cloudinary.config({
 
 export async function searchGalleryImages(): Promise<GalleryImage[]> {
   const result =  await cloudinary.search
-    .expression(`resource_type:image AND folder:${process.env.CLOUDINARY_FOLDER}/*`)
+    .expression(`resource_type:image AND asset_folder:${process.env.CLOUDINARY_FOLDER}/*`)
     .sort_by('public_id', 'desc')
     .max_results(400)
     .execute()
 
-    return result.resources.map((item: any) => ({
-      id: item.asset_id,
-      publicId: item.public_id,
+    return result.resources.map((item: any, index: number) => ({
+      // UI routes and modal navigation are index-based (/?photoId=<index>)
+      id: index,
+      public_id: item.public_id,
       width: item.width,
       height: item.height,
       format: item.format,

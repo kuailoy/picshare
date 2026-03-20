@@ -1,7 +1,7 @@
-import cloudinary from '@/utils/cloudinary'
 import getBase64ImageUrl from '@/utils/generateBlurPlaceholder'
 import type { GalleryImage } from '@/types'
 import Gallery from '@/components/Gallery'
+import { getGalleryImages } from '@/server/data'
 
 export default async function Home({
   searchParams,
@@ -10,34 +10,15 @@ export default async function Home({
 }) {
   const { photoId } = await searchParams
 
-  const results = await cloudinary.search
-    .expression(`resource_type:image AND folder:${process.env.CLOUDINARY_FOLDER}/*`)
-    .sort_by('public_id', 'desc')
-    .max_results(400)
-    .execute()
+  const results = await getGalleryImages()
+  const reducedResults: GalleryImage[] = [...results]
 
-  let reducedResults: GalleryImage[] = []
+  const imagesWithBlurDataUrls = await Promise.all(
+    reducedResults.map(async (image: GalleryImage) => ({
+      ...image,
+      blurDataUrl: await getBase64ImageUrl(image),
+    })),
+  )
 
-  let i = 0
-  for (let result of results.resources) {
-    reducedResults.push({
-      id: i,
-      height: result.height,
-      width: result.width,
-      public_id: result.public_id,
-      format: result.format,
-    })
-    i++
-  }
-
-  const blurImagePromises = results.resources.map((image: GalleryImage) => {
-    return getBase64ImageUrl(image)
-  })
-  const imagesWithBlurDataUrls = await Promise.all(blurImagePromises)
-
-  for (let i = 0; i < reducedResults.length; i++) {
-    reducedResults[i].blurDataUrl = imagesWithBlurDataUrls[i]
-  }
-
-  return <Gallery images={reducedResults} photoId={photoId} />
+  return <Gallery images={imagesWithBlurDataUrls} photoId={photoId} />
 }
