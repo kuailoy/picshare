@@ -18,7 +18,76 @@ Not a cloud drive.
 Not a social network.
 A focused photo sharing and collaborative selection platform.
 
-## 🏗 Core Design
+## 🏗️ System Architecture
+
+```mermaid
+flowchart LR
+
+    subgraph Client
+        A[Next.js Frontend]
+    end
+
+    subgraph Server
+        B[API Routes]
+        C[Auth.js]
+    end
+
+    subgraph Data Layer
+        D[(Supabase<br/>PostgreSQL)]
+        E[(Cloudinary)]
+    end
+
+    A --> B
+    B --> C
+    B --> D
+    B --> E
+
+    A -->|Direct Upload| E
+    E -->|URL + public_id| B
+    B -->|Save Metadata| D
+    D -->|Query Images| B
+    B --> A
+```
+
+## 📤 Upload Flow (Signed Upload + DB Sync)
+
+```mermaid
+sequenceDiagram
+    participant U as User
+    participant F as Frontend (Next.js)
+    participant S as API Server
+    participant C as Cloudinary
+    participant D as Database (Supabase)
+
+    U->>F: Select image
+
+    F->>S: GET /api/signature
+    S-->>F: signature + timestamp
+
+    F->>C: Upload image (with signature)
+    C-->>F: Upload success (secure_url, public_id)
+
+    F->>S: POST /api/images
+    S->>D: Insert image metadata
+
+    alt DB insert success
+        S-->>F: Success response
+        F-->>U: Show uploaded image
+    else DB insert failed
+        S->>C: Delete image (public_id)
+        S-->>F: Error response
+        F-->>U: Show error message
+    end
+```
+
+### Upload Strategy
+
+- Images are uploaded directly from the frontend to Cloudinary using a signed upload.
+- After a successful upload, metadata is stored in the database.
+- If the database operation fails, the uploaded image is deleted from Cloudinary to maintain consistency.
+
+
+## Core Design
 
 ### Project Focus
 

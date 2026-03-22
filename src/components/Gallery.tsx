@@ -27,6 +27,17 @@ export default function Gallery({
     }
   }, [photoId, lastViewedPhoto, setLastViewedPhoto])
 
+  // Temporary for test api route, will be replaced by upload widget in the future
+  const signUpload = async () => {
+    const res = await fetch('/api/uploads/sign', {
+      method: 'POST',
+    })
+
+      const data = await res.json()
+      console.log('Upload signature data:', data)
+    }
+
+
   return (
     <>
       <main className="mx-auto max-w-[1960px] p-4">
@@ -49,7 +60,7 @@ export default function Gallery({
               <span className="absolute bottom-0 left-0 right-0 h-100 bg-linear-to-b from-black/0 via-black to-black"></span>
             </div>
             <div className="flex gap-4 absolute z-10 top-0 right-0 p-4">
-                <ArrowUpTrayIcon className="h-6 w-6 hover:cursor-pointer" />
+                <ArrowUpTrayIcon className="h-6 w-6 hover:cursor-pointer" onClick={signUpload} />
                 <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
             </div>
             <h1 className="mb-4 mt-8 text-base font-bold uppercase tracking-widest">Photo Session Name</h1>

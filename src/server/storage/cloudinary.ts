@@ -24,3 +24,29 @@ export async function searchGalleryImages(): Promise<GalleryImage[]> {
       format: item.format,
   }))
 }
+
+// TODO: folder prefix should be based on userID
+// For example `users/${userId}/posts/${params?.folder}`,
+export function generateUploadSignature(params?: {
+  folder?: string;
+}) {
+  const timestamp = Math.round(Date.now() / 1000);
+
+  const uploadParams = {
+    timestamp,
+    folder: params?.folder || "samples",
+  };
+
+  const signature = cloudinary.utils.api_sign_request(
+    uploadParams,
+    process.env.CLOUDINARY_API_SECRET!
+  );
+
+  return {
+    timestamp,
+    signature,
+    apiKey: process.env.CLOUDINARY_API_KEY!,
+    cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
+    folder: uploadParams.folder,
+  };
+}
