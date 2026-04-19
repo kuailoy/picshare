@@ -36,6 +36,9 @@ model Project {
   /// Optional custom domain (future feature)
   customDomain String? @unique
 
+  /// Optional cover image reference
+  coverImageId String? @unique
+
   /// Created timestamp
   createdAt DateTime @default(now())
 
@@ -44,6 +47,9 @@ model Project {
 
   /// One-to-many relation
   images Image[]
+
+  /// Optional cover image relation
+  coverImage Image? @relation("ProjectCoverImage", fields: [coverImageId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
 }
@@ -83,6 +89,9 @@ model Image {
 
   /// Relation to Project
   project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Project using this image as its cover
+  coverForProject Project? @relation("ProjectCoverImage")
 
   /// Optimized query index
   @@index([projectId, createdAt])
