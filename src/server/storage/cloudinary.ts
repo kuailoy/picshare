@@ -52,3 +52,12 @@ export function generateUploadSignature(params?: {
     folder: uploadParams.folder,
   }
 }
+
+export async function deleteUploadedImages(publicIds: string[]) {
+  if (publicIds.length === 0) return
+
+  await cloudinary.api.delete_resources(publicIds, {
+    resource_type: 'image',
+    type: 'upload',
+  })
+}

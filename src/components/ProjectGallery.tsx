@@ -6,6 +6,7 @@ import { getGalleryImages } from '@/server/data'
 type ProjectGalleryProps = {
   photoId?: string
   folder: string
+  projectSlug?: string
   basePath: string
   allowUpload: boolean
   title: string
@@ -15,6 +16,7 @@ type ProjectGalleryProps = {
 export default async function ProjectGallery({
   photoId,
   folder,
+  projectSlug,
   basePath,
   allowUpload,
   title,
@@ -36,6 +38,7 @@ export default async function ProjectGallery({
       photoId={photoId}
       basePath={basePath}
       folder={folder}
+      projectSlug={projectSlug}
       allowUpload={allowUpload}
       title={title}
       description={description || undefined}

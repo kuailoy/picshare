@@ -6,6 +6,7 @@ import type { GalleryImage } from '@/types'
 
 type UploadProps = {
   folder?: string
+  projectSlug?: string
   onUploadComplete: (images: GalleryImage[]) => void
   onProgressChange: (progress: number) => void
   onStatusChange: (status: string) => void
@@ -14,14 +15,24 @@ type UploadProps = {
 
 type CloudinaryUploadResult = {
   public_id: string
+  secure_url: string
   width: number
   height: number
   format: string
   created_at?: string
 }
 
+type PersistableImage = {
+  publicId: string
+  url: string
+  width?: number
+  height?: number
+  format?: string
+}
+
 export default function Upload({
   folder,
+  projectSlug,
   onUploadComplete,
   onProgressChange,
   onStatusChange,
@@ -97,9 +108,10 @@ export default function Upload({
         throw new Error('Failed to sign upload')
       }
 
-      const { apiKey, cloudName, folder, signature, timestamp } = await signatureResponse.json()
+      const { apiKey, cloudName, folder: uploadFolder, signature, timestamp } = await signatureResponse.json()
       let completedUploads = 0
       const uploadedImages: (GalleryImage & { created_at?: string })[] = []
+      const persistedImages: PersistableImage[] = []
       const loadedByFile = new Map<string, number>()
       const totalBytes = files.reduce((total, file) => total + file.size, 0)
 
@@ -110,7 +122,7 @@ export default function Upload({
 
           formData.append('file', file)
           formData.append('api_key', apiKey)
-          formData.append('folder', folder)
+          formData.append('folder', uploadFolder)
           formData.append('signature', signature)
           formData.append('timestamp', String(timestamp))
 
@@ -138,12 +150,36 @@ export default function Upload({
             created_at: uploadedImage.created_at,
           })
 
+          persistedImages.push({
+            publicId: uploadedImage.public_id,
+            url: uploadedImage.secure_url,
+            width: uploadedImage.width,
+            height: uploadedImage.height,
+            format: uploadedImage.format,
+          })
+
           completedUploads += 1
           onStatusChange(
             `Uploaded ${completedUploads} of ${files.length} ${files.length === 1 ? 'image' : 'images'}`
           )
         })
       )
+
+      if (projectSlug) {
+        onStatusChange('Saving image metadata...')
+        const persistRes = await fetch(`/api/projects/${encodeURIComponent(projectSlug)}/images`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ images: persistedImages }),
+        })
+
+        if (!persistRes.ok) {
+          const data = await persistRes.json().catch(() => ({}))
+          throw new Error(data.error || 'Failed to save image metadata')
+        }
+      }
 
       onProgressChange(100)
       onStatusChange('Upload complete.')

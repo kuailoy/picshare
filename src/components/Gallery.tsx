@@ -16,6 +16,7 @@ export default function Gallery({
   photoId,
   basePath = '/',
   folder,
+  projectSlug,
   allowUpload = true,
   title = 'Photo Session Name',
   description = 'Photo Session Description',
@@ -24,6 +25,7 @@ export default function Gallery({
   photoId?: string
   basePath?: string
   folder?: string
+  projectSlug?: string
   allowUpload?: boolean
   title?: string
   description?: string
@@ -83,6 +85,7 @@ export default function Gallery({
                 <>
                   <Upload
                     folder={folder}
+                    projectSlug={projectSlug}
                     onUploadComplete={(uploadedImages) => {
                       setGalleryImages((currentImages) => [
                         ...uploadedImages,

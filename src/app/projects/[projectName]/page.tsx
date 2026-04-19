@@ -20,6 +20,7 @@ export default async function ProjectPage({
     <ProjectGallery
       photoId={photoId}
       folder={project.folder}
+      projectSlug={project.slug}
       basePath={`/projects/${project.slug}`}
       allowUpload={true}
       title={project.name}
