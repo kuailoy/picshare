@@ -6,3 +6,12 @@ export interface GalleryImage {
   format: string;
   blurDataUrl?: string;
 }
+
+export type ProjectListItem = {
+  id: string
+  slug: string
+  name: string
+  description?: string | null
+  folder: string
+  coverImageUrl?: string | null
+}

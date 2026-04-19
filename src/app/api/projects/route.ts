@@ -2,6 +2,7 @@ import { nanoid } from 'nanoid'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/server/db/prisma'
+import { getProjects } from '@/server/data'
 
 const createProjectSchema = z.object({
   name: z.string().trim().min(1),
@@ -61,4 +62,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
   }
+}
+
+export async function GET() {
+  const projects = await getProjects()
+
+  return NextResponse.json(projects)
 }
