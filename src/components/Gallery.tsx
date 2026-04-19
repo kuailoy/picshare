@@ -3,7 +3,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Suspense, useEffect, useRef, useState } from 'react'
-import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline'
+import { AdjustmentsHorizontalIcon, ShareIcon } from '@heroicons/react/24/outline'
 import Bridge from '@/components/Icons/Bridge'
 import Modal from '@/components/Modal'
 import Upload from '@/components/Upload'
@@ -40,6 +40,8 @@ export default function Gallery({
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadStatus, setUploadStatus] = useState('')
   const [uploadTone, setUploadTone] = useState<'progress' | 'success' | 'warning' | 'error'>('progress')
+  const [isCopyingShareLink, setIsCopyingShareLink] = useState(false)
+  const [shareCopyLabel, setShareCopyLabel] = useState('Share')
   const lastViewedPhotoRef = useRef<HTMLAnchorElement>(null)
   const displayedImages = galleryImages.map((image, index) => ({
     ...image,
@@ -62,6 +64,60 @@ export default function Gallery({
     creditName ? `Photo by ${creditName}` : null,
     clientName ? `For ${clientName}` : null,
   ].filter(Boolean) as string[]
+
+  const copyText = async (text: string) => {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text)
+      return
+    }
+
+    const input = document.createElement('textarea')
+    input.value = text
+    input.setAttribute('readonly', '')
+    input.style.position = 'absolute'
+    input.style.left = '-9999px'
+    document.body.appendChild(input)
+    input.select()
+    const copied = document.execCommand('copy')
+    document.body.removeChild(input)
+
+    if (!copied) {
+      throw new Error('copy command failed')
+    }
+  }
+
+  const copyShareLink = async () => {
+    if (!projectSlug || isCopyingShareLink) {
+      return
+    }
+
+    setIsCopyingShareLink(true)
+
+    try {
+      const response = await fetch(`/api/projects/${projectSlug}/share-link`)
+
+      if (!response.ok) {
+        throw new Error('failed to fetch share token')
+      }
+
+      const data = await response.json() as { shareToken?: string }
+
+      if (!data.shareToken) {
+        throw new Error('missing share token')
+      }
+
+      const shareUrl = `${window.location.origin}/share/${data.shareToken}`
+      await copyText(shareUrl)
+      setShareCopyLabel('Copied')
+      setTimeout(() => setShareCopyLabel('Share'), 1600)
+    } catch (error) {
+      console.error(error)
+      setShareCopyLabel('Failed')
+      setTimeout(() => setShareCopyLabel('Share'), 1600)
+    } finally {
+      setIsCopyingShareLink(false)
+    }
+  }
 
   return (
     <>
@@ -108,6 +164,15 @@ export default function Gallery({
                     onToneChange={setUploadTone}
                     onUploadingChange={setIsUploading}
                   />
+                  <button
+                    type="button"
+                    onClick={copyShareLink}
+                    disabled={isCopyingShareLink}
+                    className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-black/35 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-black/50 disabled:cursor-not-allowed disabled:opacity-60"
+                  >
+                    <ShareIcon className="h-4 w-4" />
+                    <span>{shareCopyLabel}</span>
+                  </button>
                   <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
                 </>
               )}

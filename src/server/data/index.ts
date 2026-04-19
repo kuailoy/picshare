@@ -1,6 +1,6 @@
 import { prisma } from '@/server/db/prisma'
 import { storage } from '../storage'
-import type { ProjectListItem } from '@/types'
+import type { ProjectDetail, ProjectListItem } from '@/types'
 
 export async function getGalleryImages(folder?: string) {
   return storage.searchGalleryImages({ folder })
@@ -43,15 +43,42 @@ export async function getProjects(): Promise<ProjectListItem[]> {
   }))
 }
 
-export async function getProjectBySlug(slug: string) {
+export async function getProjectBySlug(slug: string): Promise<ProjectDetail | null> {
   return prisma.project.findUnique({
     where: { slug },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      folder: true,
+      creditName: true,
+      clientName: true,
+    },
   })
 }
 
-export async function getProjectByShareToken(token: string) {
+export async function getProjectByShareToken(token: string): Promise<ProjectDetail | null> {
   return prisma.project.findUnique({
     where: { shareToken: token },
+    select: {
+      id: true,
+      slug: true,
+      name: true,
+      description: true,
+      folder: true,
+      creditName: true,
+      clientName: true,
+    },
   })
+}
+
+export async function getShareLink(slug: string): Promise<string | null> {
+  const project = await prisma.project.findUnique({
+    where: { slug },
+    select: { shareToken: true },
+  })
+
+  return project?.shareToken ?? null
 }
 

@@ -1,11 +1,6 @@
 import { notFound } from 'next/navigation'
-import ProjectGallery from '@/components/ProjectGallery'
+import ProjectPage from '@/components/ProjectPage'
 import { getProjectByShareToken } from '@/server/data'
-
-type ProjectCreditFields = {
-  creditName?: string | null
-  clientName?: string | null
-}
 
 export default async function SharePage({
   params,
@@ -21,18 +16,12 @@ export default async function SharePage({
     notFound()
   }
 
-  const projectWithCredits = project as typeof project & ProjectCreditFields
-
   return (
-    <ProjectGallery
+    <ProjectPage
+      project={project}
+      canEdit={false}
       photoId={photoId}
-      folder={project.folder}
       basePath={`/share/${token}`}
-      allowUpload={false}
-      title={project.name}
-      description={project.description}
-      creditName={projectWithCredits.creditName ?? undefined}
-      clientName={projectWithCredits.clientName ?? undefined}
     />
   )
 }

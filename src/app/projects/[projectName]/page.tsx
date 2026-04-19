@@ -1,11 +1,6 @@
 import { notFound } from 'next/navigation'
-import ProjectGallery from '@/components/ProjectGallery'
+import SharedProjectPage from '@/components/ProjectPage'
 import { getProjectBySlug } from '@/server/data'
-
-type ProjectCreditFields = {
-  creditName?: string | null
-  clientName?: string | null
-}
 
 export default async function ProjectPage({
   params,
@@ -21,19 +16,12 @@ export default async function ProjectPage({
     notFound()
   }
 
-  const projectWithCredits = project as typeof project & ProjectCreditFields
-
   return (
-    <ProjectGallery
+    <SharedProjectPage
+      project={project}
+      canEdit={true}
       photoId={photoId}
-      folder={project.folder}
-      projectSlug={project.slug}
       basePath={`/projects/${project.slug}`}
-      allowUpload={true}
-      title={project.name}
-      description={project.description}
-      creditName={projectWithCredits.creditName ?? undefined}
-      clientName={projectWithCredits.clientName ?? undefined}
     />
   )
 }
