@@ -5,6 +5,7 @@ import { type ChangeEvent, useRef, useState } from 'react'
 import type { GalleryImage } from '@/types'
 
 type UploadProps = {
+  folder?: string
   onUploadComplete: (images: GalleryImage[]) => void
   onProgressChange: (progress: number) => void
   onStatusChange: (status: string) => void
@@ -20,6 +21,7 @@ type CloudinaryUploadResult = {
 }
 
 export default function Upload({
+  folder,
   onUploadComplete,
   onProgressChange,
   onStatusChange,
@@ -88,6 +90,7 @@ export default function Upload({
         headers: {
           'Content-Type': 'application/json',
         },
+        body: JSON.stringify({ folder }),
       })
 
       if (!signatureResponse.ok) {

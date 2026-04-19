@@ -8,6 +8,7 @@ import NewProjectModal from './NewProjectModal'
 
 type Project = {
   id: string
+  slug: string
   name: string
   coverImage?: { url: string }
   images: { url: string }[]
@@ -52,7 +53,7 @@ function ProjectsGrid({
         return (
           <Link
             key={project.id}
-            href={`/projects/${project.id}`}
+            href={`/projects/${project.slug}`}
             className="group block focus:outline-none"
           >
             <div className="aspect-square overflow-hidden rounded-lg bg-gray-100 transition duration-200 group-hover:scale-105 group-hover:opacity-90">
@@ -113,7 +114,7 @@ export default function ProjectsPage() {
       }
 
       closeModal()
-      router.push(`/projects/${data.id}`)
+      router.push(`/projects/${data.slug}`)
     } finally {
       setLoading(false)
     }

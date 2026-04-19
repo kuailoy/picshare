@@ -11,9 +11,11 @@ import SharedModal from "@/components/SharedModal";
 export default function Modal({
   images,
   onClose,
+  basePath = '/',
 }: {
   images: GalleryImage[];
   onClose?: () => void;
+  basePath?: string;
 }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -25,7 +27,7 @@ export default function Modal({
   const [curIndex, setCurIndex] = useState(index);
 
   function handleClose() {
-    router.push("/");
+    router.push(basePath);
     onClose?.();
   }
 
@@ -36,7 +38,7 @@ export default function Modal({
       setDirection(-1);
     }
     setCurIndex(newVal);
-    router.push(`/?photoId=${newVal}`);
+    router.push(`${basePath}?photoId=${newVal}`);
   }
 
   useKeypress("ArrowRight", () => {

@@ -14,9 +14,19 @@ import { useLastViewedPhoto } from '@/utils/useLastViewedPhoto'
 export default function Gallery({
   images,
   photoId,
+  basePath = '/',
+  folder,
+  allowUpload = true,
+  title = 'Photo Session Name',
+  description = 'Photo Session Description',
 }: {
   images: GalleryImage[]
   photoId?: string
+  basePath?: string
+  folder?: string
+  allowUpload?: boolean
+  title?: string
+  description?: string
 }) {
   const [lastViewedPhoto, setLastViewedPhoto] = useLastViewedPhoto()
   const [galleryImages, setGalleryImages] = useState(images)
@@ -53,6 +63,7 @@ export default function Gallery({
           <Suspense>
             <Modal
               images={displayedImages}
+              basePath={basePath}
               onClose={() => {
                 setLastViewedPhoto(photoId)
               }}
@@ -68,26 +79,33 @@ export default function Gallery({
               <span className="absolute bottom-0 left-0 right-0 h-100 bg-linear-to-b from-black/0 via-black to-black"></span>
             </div>
             <div className="absolute right-0 top-0 z-10 flex gap-4 p-4">
-              <Upload
-                onUploadComplete={(uploadedImages) => {
-                  setGalleryImages((currentImages) => [
-                    ...uploadedImages,
-                    ...currentImages,
-                  ])
-                }}
-                onProgressChange={setUploadProgress}
-                onStatusChange={setUploadStatus}
-                onUploadingChange={setIsUploading}
-              />
-              <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
+              {allowUpload && (
+                <>
+                  <Upload
+                    folder={folder}
+                    onUploadComplete={(uploadedImages) => {
+                      setGalleryImages((currentImages) => [
+                        ...uploadedImages,
+                        ...currentImages,
+                      ])
+                    }}
+                    onProgressChange={setUploadProgress}
+                    onStatusChange={setUploadStatus}
+                    onUploadingChange={setIsUploading}
+                  />
+                  <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
+                </>
+              )}
             </div>
-            <h1 className="mb-4 mt-8 text-base font-bold uppercase tracking-widest">Photo Session Name</h1>
-            <p className="max-w-[40ch] sm:max-w-[32ch]">Photo Session Description</p>
+            <h1 className="mb-4 mt-8 text-base font-bold uppercase tracking-widest">
+              {title}
+            </h1>
+            <p className="max-w-[40ch] sm:max-w-[32ch]">{description}</p>
           </div>
           {displayedImages.map(({ id, public_id, format, blurDataUrl }) => (
             <Link
               key={id}
-              href={`/?photoId=${id}`}
+              href={`${basePath}?photoId=${id}`}
               ref={id === Number(lastViewedPhoto) ? lastViewedPhotoRef : null}
               className="after:content group relative mb-5 block w-full cursor-zoom-in after:pointer-events-none after:absolute after:inset-0 after:rounded-lg after:shadow-highlight"
             >

@@ -1,16 +1,25 @@
 import getBase64ImageUrl from '@/utils/generateBlurPlaceholder'
-import type { GalleryImage } from '@/types'
 import Gallery from '@/components/Gallery'
+import type { GalleryImage } from '@/types'
 import { getGalleryImages } from '@/server/data'
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ photoId?: string }>
-}) {
-  const { photoId } = await searchParams
-  const folder = process.env.CLOUDINARY_FOLDER || 'samples'
+type ProjectGalleryProps = {
+  photoId?: string
+  folder: string
+  basePath: string
+  allowUpload: boolean
+  title: string
+  description?: string | null
+}
 
+export default async function ProjectGallery({
+  photoId,
+  folder,
+  basePath,
+  allowUpload,
+  title,
+  description,
+}: ProjectGalleryProps) {
   const results = await getGalleryImages(folder)
   const reducedResults: GalleryImage[] = [...results]
 
@@ -25,8 +34,11 @@ export default async function Home({
     <Gallery
       images={imagesWithBlurDataUrls}
       photoId={photoId}
-      basePath="/"
+      basePath={basePath}
       folder={folder}
+      allowUpload={allowUpload}
+      title={title}
+      description={description || undefined}
     />
   )
 }
