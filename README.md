@@ -2,6 +2,21 @@
 
 👋 **Read more details about Project Design and Development here [Devleopment-Notes](./Development-Notes.md)**
 
+## How to run the project
+
+Run `npm install`, then `npm run dev`.
+
+## Setup Prisma database (first time only)
+
+This project uses Prisma with PostgreSQL.
+
+Set `DATABASE_URL` in `.env.local`, then run `pnpm prisma migrate dev`.
+
+## View database
+
+Run `npx prisma studio`
+
+
 ## 💡 Objective
 
 A lightweight photo sharing and collaborative selection platform.
@@ -86,6 +101,52 @@ sequenceDiagram
 - After a successful upload, metadata is stored in the database.
 - If the database operation fails, the uploaded image is deleted from Cloudinary to maintain consistency.
 
+
+## Database Schema
+
+![Schema](./public/schema.svg)
+
+## Overview
+
+- A **Project** represents a collection of images
+- Each **Image** belongs to a single Project (1:N relationship)
+- Image files are stored externally (e.g. Cloudinary), while the database stores metadata only
+
+## Access Patterns
+
+- Public access: `/[slug]`
+- Private sharing: `/share/[token]`
+
+## Key Fields
+
+- `slug`
+  URL-friendly identifier for public routes
+
+- `shareToken`
+  Unique token used for private sharing links
+
+- `isPublic`
+  Controls whether a project is accessible publicly
+
+- `publicId`
+  External storage identifier (used for deletion and transformations)
+
+- `folder`
+  Logical storage path, decoupled from any specific provider
+
+- `projectId`
+  Foreign key linking Image to Project
+
+- `order`
+  Optional priority for manual sorting (fallback: `createdAt`)
+
+## Notes
+
+- Deleting a Project cascades to its Images in the database
+- External storage (e.g. Cloudinary) must be cleaned up separately
+- Sorting strategy:
+  - First by `order` (if set)
+  - Then by `createdAt` (default fallback)
 
 ## Core Design
 
@@ -191,9 +252,9 @@ The display layer is designed to also function as:
 
 3. Possible Enterprise Directions (Future Consideration)
 
-Multi-stakeholder collaboration
-Selection consensus visualization
-Version management (retouched variants)
-Approval workflow
-Activity logs
----
+- Multi-stakeholder collaboration
+- Selection consensus visualization
+- Version management (retouched variants)
+- Approval workflow
+- Activity logs
+
