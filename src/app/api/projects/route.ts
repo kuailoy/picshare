@@ -1,4 +1,5 @@
 import { nanoid } from 'nanoid'
+import { revalidatePath } from 'next/cache'
 import { NextResponse } from 'next/server'
 import { z } from 'zod'
 import { prisma } from '@/server/db/prisma'
@@ -56,6 +57,8 @@ export async function POST(request: Request) {
         clientName: true,
       },
     })
+
+    revalidatePath('/projects')
 
     return NextResponse.json(project)
   } catch (error: any) {
