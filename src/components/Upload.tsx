@@ -10,6 +10,7 @@ type UploadProps = {
   onUploadComplete: (images: GalleryImage[]) => void
   onProgressChange: (progress: number) => void
   onStatusChange: (status: string) => void
+  onToneChange: (tone: 'progress' | 'success' | 'warning' | 'error') => void
   onUploadingChange: (isUploading: boolean) => void
 }
 
@@ -30,12 +31,39 @@ type PersistableImage = {
   format?: string
 }
 
+const MAX_CONCURRENT_UPLOADS = 3
+
+async function runWithConcurrency<T>(
+  items: T[],
+  limit: number,
+  handler: (item: T, index: number) => Promise<void>,
+) {
+  let nextIndex = 0
+
+  async function worker() {
+    while (true) {
+      const currentIndex = nextIndex
+      nextIndex += 1
+
+      if (currentIndex >= items.length) {
+        return
+      }
+
+      await handler(items[currentIndex], currentIndex)
+    }
+  }
+
+  const workerCount = Math.min(limit, items.length)
+  await Promise.all(Array.from({ length: workerCount }, () => worker()))
+}
+
 export default function Upload({
   folder,
   projectSlug,
   onUploadComplete,
   onProgressChange,
   onStatusChange,
+  onToneChange,
   onUploadingChange,
 }: UploadProps) {
   const [isUploading, setIsUploading] = useState(false)
@@ -92,6 +120,7 @@ export default function Upload({
     }
 
     setUploading(true)
+    onToneChange('progress')
     onProgressChange(0)
     onStatusChange(`Preparing ${files.length} ${files.length === 1 ? 'image' : 'images'}...`)
 
@@ -115,58 +144,61 @@ export default function Upload({
       const loadedByFile = new Map<string, number>()
       const totalBytes = files.reduce((total, file) => total + file.size, 0)
 
-      await Promise.all(
-        files.map(async (file, index) => {
-          const fileKey = `${file.name}-${file.size}-${file.lastModified}-${index}`
-          const formData = new FormData()
-
-          formData.append('file', file)
-          formData.append('api_key', apiKey)
-          formData.append('folder', uploadFolder)
-          formData.append('signature', signature)
-          formData.append('timestamp', String(timestamp))
-
-          const uploadedImage = await uploadFile({
-            cloudName,
-            file,
-            formData,
-            onProgress: (loaded) => {
-              loadedByFile.set(fileKey, loaded)
-              const loadedBytes = Array.from(loadedByFile.values()).reduce(
-                (total, fileLoaded) => total + fileLoaded,
-                0
-              )
-
-              onProgressChange(Math.min(99, Math.round((loadedBytes / totalBytes) * 100)))
-            },
-          })
-
-          uploadedImages.push({
-            id: 0,
-            public_id: uploadedImage.public_id,
-            width: String(uploadedImage.width),
-            height: String(uploadedImage.height),
-            format: uploadedImage.format,
-            created_at: uploadedImage.created_at,
-          })
-
-          persistedImages.push({
-            publicId: uploadedImage.public_id,
-            url: uploadedImage.secure_url,
-            width: uploadedImage.width,
-            height: uploadedImage.height,
-            format: uploadedImage.format,
-          })
-
-          completedUploads += 1
-          onStatusChange(
-            `Uploaded ${completedUploads} of ${files.length} ${files.length === 1 ? 'image' : 'images'}`
-          )
-        })
+      onStatusChange(
+        `Uploading ${files.length} ${files.length === 1 ? 'image' : 'images'} (max ${MAX_CONCURRENT_UPLOADS} concurrent)...`
       )
+
+      await runWithConcurrency(files, MAX_CONCURRENT_UPLOADS, async (file, index) => {
+        const fileKey = `${file.name}-${file.size}-${file.lastModified}-${index}`
+        const formData = new FormData()
+
+        formData.append('file', file)
+        formData.append('api_key', apiKey)
+        formData.append('folder', uploadFolder)
+        formData.append('signature', signature)
+        formData.append('timestamp', String(timestamp))
+
+        const uploadedImage = await uploadFile({
+          cloudName,
+          file,
+          formData,
+          onProgress: (loaded) => {
+            loadedByFile.set(fileKey, loaded)
+            const loadedBytes = Array.from(loadedByFile.values()).reduce(
+              (total, fileLoaded) => total + fileLoaded,
+              0
+            )
+
+            onProgressChange(Math.min(90, Math.round((loadedBytes / totalBytes) * 90)))
+          },
+        })
+
+        uploadedImages.push({
+          id: 0,
+          public_id: uploadedImage.public_id,
+          width: String(uploadedImage.width),
+          height: String(uploadedImage.height),
+          format: uploadedImage.format,
+          created_at: uploadedImage.created_at,
+        })
+
+        persistedImages.push({
+          publicId: uploadedImage.public_id,
+          url: uploadedImage.secure_url,
+          width: uploadedImage.width,
+          height: uploadedImage.height,
+          format: uploadedImage.format,
+        })
+
+        completedUploads += 1
+        onStatusChange(
+          `Uploaded ${completedUploads} of ${files.length} ${files.length === 1 ? 'image' : 'images'}`
+        )
+      })
 
       if (projectSlug) {
         onStatusChange('Saving image metadata...')
+        onProgressChange(95)
         const persistRes = await fetch(`/api/projects/${encodeURIComponent(projectSlug)}/images`, {
           method: 'POST',
           headers: {
@@ -179,10 +211,25 @@ export default function Upload({
           const data = await persistRes.json().catch(() => ({}))
           throw new Error(data.error || 'Failed to save image metadata')
         }
+
+        const data = await persistRes.json().catch(() => ({}))
+        const inserted = typeof data.inserted === 'number' ? data.inserted : persistedImages.length
+
+        if (inserted < persistedImages.length) {
+          onProgressChange(100)
+          onToneChange('warning')
+          onStatusChange(`Uploaded ${persistedImages.length}, saved ${inserted}.`)
+        } else {
+          onProgressChange(100)
+          onToneChange('success')
+          onStatusChange(`Upload complete. Saved ${inserted} images.`)
+        }
+      } else {
+        onProgressChange(100)
+        onToneChange('success')
+        onStatusChange('Upload complete.')
       }
 
-      onProgressChange(100)
-      onStatusChange('Upload complete.')
       onUploadComplete(
         uploadedImages.sort((a, b) => {
           return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime()
@@ -190,6 +237,8 @@ export default function Upload({
       )
     } catch (error) {
       console.error(error)
+      onToneChange('error')
+      onProgressChange(100)
       onStatusChange('Upload failed. Please try again.')
     } finally {
       setUploading(false)
@@ -197,7 +246,8 @@ export default function Upload({
       window.setTimeout(() => {
         onProgressChange(0)
         onStatusChange('')
-      }, 2500)
+        onToneChange('progress')
+      }, 3200)
     }
   }
 

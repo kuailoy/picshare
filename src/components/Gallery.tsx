@@ -35,6 +35,7 @@ export default function Gallery({
   const [isUploading, setIsUploading] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadStatus, setUploadStatus] = useState('')
+  const [uploadTone, setUploadTone] = useState<'progress' | 'success' | 'warning' | 'error'>('progress')
   const lastViewedPhotoRef = useRef<HTMLAnchorElement>(null)
   const displayedImages = galleryImages.map((image, index) => ({
     ...image,
@@ -59,6 +60,7 @@ export default function Gallery({
         isUploading={isUploading}
         progress={uploadProgress}
         status={uploadStatus}
+        tone={uploadTone}
       />
       <main className="mx-auto max-w-[1960px] p-4">
         {photoId && (
@@ -94,6 +96,7 @@ export default function Gallery({
                     }}
                     onProgressChange={setUploadProgress}
                     onStatusChange={setUploadStatus}
+                    onToneChange={setUploadTone}
                     onUploadingChange={setIsUploading}
                   />
                   <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
