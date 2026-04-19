@@ -21,6 +21,12 @@ model Project {
   /// Optional description
   description String?
 
+  /// Optional photographer credit name
+  creditName String?
+
+  /// Optional client or organization name
+  clientName String?
+
   /// Logical storage folder (provider-agnostic, not tied to Cloudinary)
   folder String @unique
 

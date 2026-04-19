@@ -34,15 +34,21 @@ export default function ProjectsClient({ initialProjects }: ProjectsClientProps)
   const [projects, setProjects] = useState(initialProjects)
   const [isOpen, setIsOpen] = useState(false)
   const [projectName, setProjectName] = useState('')
+  const [creditName, setCreditName] = useState('')
+  const [clientName, setClientName] = useState('')
   const [loading, setLoading] = useState(false)
 
   function closeModal() {
     setIsOpen(false)
     setProjectName('')
+    setCreditName('')
+    setClientName('')
   }
 
   async function createProject() {
     const name = projectName.trim()
+    const credit = creditName.trim()
+    const client = clientName.trim()
 
     if (!name || loading) return
 
@@ -52,7 +58,11 @@ export default function ProjectsClient({ initialProjects }: ProjectsClientProps)
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name }),
+        body: JSON.stringify({
+          name,
+          creditName: credit || undefined,
+          clientName: client || undefined,
+        }),
       })
 
       const data = await res.json()
@@ -119,8 +129,12 @@ export default function ProjectsClient({ initialProjects }: ProjectsClientProps)
       {isOpen && (
         <NewProjectModal
           projectName={projectName}
+          creditName={creditName}
+          clientName={clientName}
           loading={loading}
           onProjectNameChange={setProjectName}
+          onCreditNameChange={setCreditName}
+          onClientNameChange={setClientName}
           onSubmit={createProject}
           onClose={closeModal}
         />

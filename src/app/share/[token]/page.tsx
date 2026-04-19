@@ -2,6 +2,11 @@ import { notFound } from 'next/navigation'
 import ProjectGallery from '@/components/ProjectGallery'
 import { getProjectByShareToken } from '@/server/data'
 
+type ProjectCreditFields = {
+  creditName?: string | null
+  clientName?: string | null
+}
+
 export default async function SharePage({
   params,
   searchParams,
@@ -16,6 +21,8 @@ export default async function SharePage({
     notFound()
   }
 
+  const projectWithCredits = project as typeof project & ProjectCreditFields
+
   return (
     <ProjectGallery
       photoId={photoId}
@@ -24,6 +31,8 @@ export default async function SharePage({
       allowUpload={false}
       title={project.name}
       description={project.description}
+      creditName={projectWithCredits.creditName ?? undefined}
+      clientName={projectWithCredits.clientName ?? undefined}
     />
   )
 }

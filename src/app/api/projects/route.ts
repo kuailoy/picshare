@@ -6,6 +6,8 @@ import { getProjects } from '@/server/data'
 
 const createProjectSchema = z.object({
   name: z.string().trim().min(1),
+  creditName: z.string().trim().min(1).optional(),
+  clientName: z.string().trim().min(1).optional(),
 })
 
 function normalizeSlug(input: string) {
@@ -30,7 +32,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'name is required' }, { status: 400 })
   }
 
-  const { name } = result.data
+  const { name, creditName, clientName } = result.data
   const slug = normalizeSlug(name)
 
   try {
@@ -41,6 +43,8 @@ export async function POST(request: Request) {
         folder: slug,
         shareToken: nanoid(32),
         isPublic: false,
+        creditName,
+        clientName,
       },
       select: {
         id: true,
@@ -48,6 +52,8 @@ export async function POST(request: Request) {
         slug: true,
         folder: true,
         shareToken: true,
+        creditName: true,
+        clientName: true,
       },
     })
 
@@ -58,6 +64,13 @@ export async function POST(request: Request) {
     // 判断 unique constraint
     if (error?.code === 'P2002') {
       return NextResponse.json({ error: 'slug already exists' }, { status: 400 })
+    }
+
+    if (error?.code === 'P1003' || error?.code === 'P1001') {
+      return NextResponse.json(
+        { error: 'Database connection is not ready. Please check DATABASE_URL and restart dev server.' },
+        { status: 500 }
+      )
     }
 
     return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })

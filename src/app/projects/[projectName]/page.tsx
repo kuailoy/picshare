@@ -2,6 +2,11 @@ import { notFound } from 'next/navigation'
 import ProjectGallery from '@/components/ProjectGallery'
 import { getProjectBySlug } from '@/server/data'
 
+type ProjectCreditFields = {
+  creditName?: string | null
+  clientName?: string | null
+}
+
 export default async function ProjectPage({
   params,
   searchParams,
@@ -16,6 +21,8 @@ export default async function ProjectPage({
     notFound()
   }
 
+  const projectWithCredits = project as typeof project & ProjectCreditFields
+
   return (
     <ProjectGallery
       photoId={photoId}
@@ -25,6 +32,8 @@ export default async function ProjectPage({
       allowUpload={true}
       title={project.name}
       description={project.description}
+      creditName={projectWithCredits.creditName ?? undefined}
+      clientName={projectWithCredits.clientName ?? undefined}
     />
   )
 }

@@ -11,6 +11,8 @@ type ProjectGalleryProps = {
   allowUpload: boolean
   title: string
   description?: string | null
+  creditName?: string | null
+  clientName?: string | null
 }
 
 export default async function ProjectGallery({
@@ -21,6 +23,8 @@ export default async function ProjectGallery({
   allowUpload,
   title,
   description,
+  creditName,
+  clientName,
 }: ProjectGalleryProps) {
   const results = await getGalleryImages(folder)
   const reducedResults: GalleryImage[] = [...results]
@@ -42,6 +46,8 @@ export default async function ProjectGallery({
       allowUpload={allowUpload}
       title={title}
       description={description || undefined}
+      creditName={creditName || undefined}
+      clientName={clientName || undefined}
     />
   )
 }

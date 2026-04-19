@@ -20,6 +20,8 @@ export default function Gallery({
   allowUpload = true,
   title = 'Photo Session Name',
   description = 'Photo Session Description',
+  creditName,
+  clientName,
 }: {
   images: GalleryImage[]
   photoId?: string
@@ -29,6 +31,8 @@ export default function Gallery({
   allowUpload?: boolean
   title?: string
   description?: string
+  creditName?: string
+  clientName?: string
 }) {
   const [lastViewedPhoto, setLastViewedPhoto] = useLastViewedPhoto()
   const [galleryImages, setGalleryImages] = useState(images)
@@ -53,6 +57,11 @@ export default function Gallery({
       setLastViewedPhoto(null)
     }
   }, [photoId, lastViewedPhoto, setLastViewedPhoto])
+
+  const footerItems = [
+    creditName ? `Photo by ${creditName}` : null,
+    clientName ? `For ${clientName}` : null,
+  ].filter(Boolean) as string[]
 
   return (
     <>
@@ -133,11 +142,11 @@ export default function Gallery({
           ))}
         </div>
       </main>
-      <footer className="p-6 text-center sm:p-12">
-        <a href="https://edelsonphotography.com/" target="_blank" className="font-semibold" rel="noreferrer">
-          Josh Edelson Photography
-        </a>
-      </footer>
+      {footerItems.length > 0 && (
+        <footer className="px-4 pb-8 pt-8 text-center sm:pb-10">
+          <p className="text-xs text-neutral-700 sm:text-sm">{footerItems.join(' · ')}</p>
+        </footer>
+      )}
     </>
   )
 }
