@@ -1,32 +1,5 @@
-import getBase64ImageUrl from '@/utils/generateBlurPlaceholder'
-import type { GalleryImage } from '@/types'
-import Gallery from '@/components/Gallery'
-import { getGalleryImages } from '@/server/data'
+import { redirect } from 'next/navigation'
 
-export default async function Home({
-  searchParams,
-}: {
-  searchParams: Promise<{ photoId?: string }>
-}) {
-  const { photoId } = await searchParams
-  const folder = process.env.CLOUDINARY_FOLDER || 'samples'
-
-  const results = await getGalleryImages(folder)
-  const reducedResults: GalleryImage[] = [...results]
-
-  const imagesWithBlurDataUrls = await Promise.all(
-    reducedResults.map(async (image: GalleryImage) => ({
-      ...image,
-      blurDataUrl: await getBase64ImageUrl(image),
-    })),
-  )
-
-  return (
-    <Gallery
-      images={imagesWithBlurDataUrls}
-      photoId={photoId}
-      basePath="/"
-      folder={folder}
-    />
-  )
+export default function Home() {
+  redirect('/projects')
 }
