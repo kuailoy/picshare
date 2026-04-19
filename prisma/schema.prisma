@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite" // switch to "postgresql" in production
+}
+
+/// Represents a collection of images (e.g. album or project)
+model Project {
+  /// Internal unique identifier
+  id String @id @default(cuid())
+
+  /// Human-readable name
+  name String
+
+  /// URL-friendly identifier (used in public routes: `/[slug]`)
+  slug String @unique
+
+  /// Optional description
+  description String?
+
+  /// Logical storage folder (provider-agnostic, not tied to Cloudinary)
+  folder String @unique
+
+  /// Whether accessible via public route
+  isPublic Boolean @default(false)
+
+  /// Token for private sharing (`/share/[token]`)
+  shareToken String? @unique
+
+  /// Optional password protection (hashed)
+  passwordHash String?
+
+  /// Optional custom domain (future feature)
+  customDomain String? @unique
+
+  /// Created timestamp
+  createdAt DateTime @default(now())
+
+  /// Updated timestamp
+  updatedAt DateTime @updatedAt
+
+  /// One-to-many relation
+  images Image[]
+
+  @@index([createdAt])
+}
+
+/// Represents an image within a project
+model Image {
+  /// Internal unique identifier
+  id String @id @default(cuid())
+
+  /// Foreign key to Project
+  projectId String
+
+  /// Full CDN URL (e.g. Cloudinary secure_url)
+  url String
+
+  /// External storage identifier (Cloudinary public_id, etc.)
+  publicId String @unique
+
+  /// File format (jpg, png, webp...)
+  format String?
+
+  /// Width in pixels
+  width Int?
+
+  /// Height in pixels
+  height Int?
+
+  /// Optional priority ordering (lower = higher priority)
+  /// null = fallback to default sorting (createdAt)
+  order Int?
+
+  /// Created timestamp
+  createdAt DateTime @default(now())
+
+  /// Updated timestamp
+  updatedAt DateTime @updatedAt
+
+  /// Relation to Project
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// Optimized query index
+  @@index([projectId, createdAt])
+}
