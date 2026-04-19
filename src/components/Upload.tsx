@@ -272,11 +272,11 @@ export default function Upload({
       <button
         type="button"
         aria-label="Upload images"
-        className="disabled:cursor-wait disabled:opacity-50"
+        className="group inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white shadow-sm transition duration-200 hover:scale-105 hover:bg-black/55 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 disabled:cursor-wait disabled:opacity-50"
         disabled={isUploading}
         onClick={openUploadPicker}
       >
-        <ArrowUpTrayIcon className="h-6 w-6 hover:cursor-pointer" />
+        <ArrowUpTrayIcon className="h-5 w-5 transition-transform duration-200 group-hover:-translate-y-0.5" />
       </button>
     </>
   )

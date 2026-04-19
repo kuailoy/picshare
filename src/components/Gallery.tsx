@@ -40,8 +40,12 @@ export default function Gallery({
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadStatus, setUploadStatus] = useState('')
   const [uploadTone, setUploadTone] = useState<'progress' | 'success' | 'warning' | 'error'>('progress')
+  const [isLoadingShareLink, setIsLoadingShareLink] = useState(false)
   const [isCopyingShareLink, setIsCopyingShareLink] = useState(false)
-  const [shareCopyLabel, setShareCopyLabel] = useState('Share')
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+  const [shareLink, setShareLink] = useState('')
+  const [shareError, setShareError] = useState('')
+  const [shareCopyLabel, setShareCopyLabel] = useState('Copy')
   const lastViewedPhotoRef = useRef<HTMLAnchorElement>(null)
   const displayedImages = galleryImages.map((image, index) => ({
     ...image,
@@ -86,12 +90,15 @@ export default function Gallery({
     }
   }
 
-  const copyShareLink = async () => {
-    if (!projectSlug || isCopyingShareLink) {
+  const openShareModal = async () => {
+    if (!projectSlug || isLoadingShareLink) {
       return
     }
 
-    setIsCopyingShareLink(true)
+    setIsLoadingShareLink(true)
+    setShareError('')
+    setShareCopyLabel('Copy')
+    setIsShareModalOpen(true)
 
     try {
       const response = await fetch(`/api/projects/${projectSlug}/share-link`)
@@ -106,14 +113,31 @@ export default function Gallery({
         throw new Error('missing share token')
       }
 
-      const shareUrl = `${window.location.origin}/share/${data.shareToken}`
-      await copyText(shareUrl)
+      setShareLink(`${window.location.origin}/share/${data.shareToken}`)
+    } catch (error) {
+      console.error(error)
+      setShareLink('')
+      setShareError('Failed to generate link. Please try again.')
+    } finally {
+      setIsLoadingShareLink(false)
+    }
+  }
+
+  const handleCopyShareLink = async () => {
+    if (!shareLink || isCopyingShareLink) {
+      return
+    }
+
+    setIsCopyingShareLink(true)
+
+    try {
+      await copyText(shareLink)
       setShareCopyLabel('Copied')
-      setTimeout(() => setShareCopyLabel('Share'), 1600)
+      setTimeout(() => setShareCopyLabel('Copy'), 1600)
     } catch (error) {
       console.error(error)
       setShareCopyLabel('Failed')
-      setTimeout(() => setShareCopyLabel('Share'), 1600)
+      setTimeout(() => setShareCopyLabel('Copy'), 1600)
     } finally {
       setIsCopyingShareLink(false)
     }
@@ -166,14 +190,15 @@ export default function Gallery({
                   />
                   <button
                     type="button"
-                    onClick={copyShareLink}
-                    disabled={isCopyingShareLink}
-                    className="inline-flex items-center gap-1 rounded-full border border-white/30 bg-black/35 px-3 py-1.5 text-xs font-medium text-white transition hover:bg-black/50 disabled:cursor-not-allowed disabled:opacity-60"
+                    onClick={openShareModal}
+                    disabled={isLoadingShareLink}
+                    className="group inline-flex h-9 w-9 items-center justify-center rounded-full border border-white/30 bg-black/35 text-white shadow-sm transition duration-200 hover:scale-105 hover:bg-black/55 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/70 disabled:cursor-not-allowed disabled:opacity-60"
+                    aria-label="Share project"
+                    title="Share project"
                   >
-                    <ShareIcon className="h-4 w-4" />
-                    <span>{shareCopyLabel}</span>
+                    <ShareIcon className="h-4 w-4 transition-transform duration-200 group-hover:rotate-6" />
                   </button>
-                  <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
+                  {/* <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" /> */}
                 </>
               )}
             </div>
@@ -207,6 +232,47 @@ export default function Gallery({
           ))}
         </div>
       </main>
+      {isShareModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+          <div className="w-full max-w-md rounded-xl border border-white/20 bg-neutral-950 p-4 text-white shadow-2xl">
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-sm font-semibold uppercase tracking-wide">Share Link</h2>
+              <button
+                type="button"
+                onClick={() => setIsShareModalOpen(false)}
+                className="rounded-md px-2 py-1 text-xs text-white/80 transition hover:bg-white/10 hover:text-white"
+              >
+                Close
+              </button>
+            </div>
+            <p className="mb-2 text-xs text-white/70">
+              Copy failed? You can select the link below and copy it manually.
+            </p>
+            {isLoadingShareLink ? (
+              <p className="mb-3 text-sm text-white/80">Generating link...</p>
+            ) : (
+              <>
+                <input
+                  value={shareLink}
+                  readOnly
+                  onFocus={(event) => event.currentTarget.select()}
+                  className="mb-3 w-full rounded-md border border-white/20 bg-black/30 px-3 py-2 text-sm text-white outline-none ring-white/40 placeholder:text-white/40 focus:ring-2"
+                  placeholder="Share link will appear here"
+                />
+                {shareError && <p className="mb-3 text-xs text-red-300">{shareError}</p>}
+                <button
+                  type="button"
+                  onClick={handleCopyShareLink}
+                  disabled={!shareLink || isCopyingShareLink}
+                  className="w-full rounded-md border border-white/30 bg-white/10 px-3 py-2 text-sm font-medium text-white transition hover:bg-white/20 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {isCopyingShareLink ? 'Copying...' : shareCopyLabel}
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       {footerItems.length > 0 && (
         <footer className="px-4 pb-8 pt-8 text-center sm:pb-10">
           <p className="text-xs text-neutral-700 sm:text-sm">{footerItems.join(' · ')}</p>
