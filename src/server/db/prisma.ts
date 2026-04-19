@@ -1,17 +1,22 @@
-// @ts-ignore - Generated after running `prisma generate`.
-import { PrismaClient } from '@/generated/prisma/client'
-// @ts-ignore - Installed with Prisma 7 SQLite adapter setup.
-import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3'
+import { PrismaClient } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
 
-const globalForPrisma = globalThis as unknown as {
-  prisma?: InstanceType<typeof PrismaClient>
-}
-
-const adapter = new PrismaBetterSqlite3({
-  url: process.env.DATABASE_URL || 'file:./dev.db',
+const adapter = new PrismaPg({
+  connectionString: process.env.DATABASE_URL,
 })
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient({ adapter })
+function createPrismaClient() {
+  return new PrismaClient({
+    adapter,
+    log: ['error', 'warn'],
+  })
+}
+
+const globalForPrisma = globalThis as unknown as {
+  prisma?: ReturnType<typeof createPrismaClient>
+}
+
+export const prisma = globalForPrisma.prisma ?? createPrismaClient()
 
 if (process.env.NODE_ENV !== 'production') {
   globalForPrisma.prisma = prisma

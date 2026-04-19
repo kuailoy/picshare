@@ -2,6 +2,21 @@
 
 👋 **Read more details about Project Design and Development here [Devleopment-Notes](./Development-Notes.md)**
 
+## How to run the project
+
+Run `npm install`, then `npm run dev`.
+
+## Setup Prisma database (first time only)
+
+This project uses Prisma with PostgreSQL.
+
+Set `DATABASE_URL` in `.env.local`, then run `pnpm prisma migrate dev`.
+
+## View database
+
+Run `npx prisma studio`
+
+
 ## 💡 Objective
 
 A lightweight photo sharing and collaborative selection platform.
