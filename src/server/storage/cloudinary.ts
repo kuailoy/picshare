@@ -11,7 +11,7 @@ cloudinary.config({
 export async function searchGalleryImages(): Promise<GalleryImage[]> {
   const result =  await cloudinary.search
     .expression(`resource_type:image AND asset_folder:${process.env.CLOUDINARY_FOLDER}/*`)
-    .sort_by('public_id', 'desc')
+    .sort_by('created_at', 'desc')
     .max_results(400)
     .execute()
 
@@ -34,7 +34,7 @@ export function generateUploadSignature(params?: {
 
   const uploadParams = {
     timestamp,
-    folder: params?.folder || "samples",
+    folder: params?.folder || process.env.CLOUDINARY_FOLDER || "samples",
   };
 
   const signature = cloudinary.utils.api_sign_request(
@@ -46,7 +46,7 @@ export function generateUploadSignature(params?: {
     timestamp,
     signature,
     apiKey: process.env.CLOUDINARY_API_KEY!,
-    cloudName: process.env.CLOUDINARY_CLOUD_NAME!,
+    cloudName: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || process.env.CLOUDINARY_CLOUD_NAME!,
     folder: uploadParams.folder,
   };
 }

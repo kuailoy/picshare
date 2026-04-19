@@ -7,7 +7,7 @@ export default async function getResults() {
     const fetchedResults = await cloudinary.search
       // .expression(`folder:${process.env.CLOUDINARY_FOLDER}/*`)
       .expression(`resource_type:image AND asset_folder:${process.env.CLOUDINARY_FOLDER}/*`)
-      .sort_by('public_id', 'desc')
+      .sort_by('created_at', 'desc')
       .max_results(400)
       .execute()
     cachedResults = fetchedResults

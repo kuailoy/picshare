@@ -2,10 +2,12 @@
 
 import Image from 'next/image'
 import Link from 'next/link'
-import { Suspense, useEffect, useRef } from 'react'
-import { ArrowUpTrayIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
+import { Suspense, useEffect, useRef, useState } from 'react'
+import { AdjustmentsHorizontalIcon } from '@heroicons/react/24/outline'
 import Bridge from '@/components/Icons/Bridge'
 import Modal from '@/components/Modal'
+import Upload from '@/components/Upload'
+import UploadProcessBar from '@/components/UploadProcessBar'
 import type { GalleryImage } from '@/types'
 import { useLastViewedPhoto } from '@/utils/useLastViewedPhoto'
 
@@ -17,7 +19,19 @@ export default function Gallery({
   photoId?: string
 }) {
   const [lastViewedPhoto, setLastViewedPhoto] = useLastViewedPhoto()
+  const [galleryImages, setGalleryImages] = useState(images)
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadStatus, setUploadStatus] = useState('')
   const lastViewedPhotoRef = useRef<HTMLAnchorElement>(null)
+  const displayedImages = galleryImages.map((image, index) => ({
+    ...image,
+    id: index,
+  }))
+
+  useEffect(() => {
+    setGalleryImages(images)
+  }, [images])
 
   useEffect(() => {
     // This effect keeps track of the last viewed photo in the modal to keep the index page in sync when the user navigates back
@@ -27,24 +41,18 @@ export default function Gallery({
     }
   }, [photoId, lastViewedPhoto, setLastViewedPhoto])
 
-  // Temporary for test api route, will be replaced by upload widget in the future
-  const signUpload = async () => {
-    const res = await fetch('/api/uploads/sign', {
-      method: 'POST',
-    })
-
-      const data = await res.json()
-      console.log('Upload signature data:', data)
-    }
-
-
   return (
     <>
+      <UploadProcessBar
+        isUploading={isUploading}
+        progress={uploadProgress}
+        status={uploadStatus}
+      />
       <main className="mx-auto max-w-[1960px] p-4">
         {photoId && (
           <Suspense>
             <Modal
-              images={images}
+              images={displayedImages}
               onClose={() => {
                 setLastViewedPhoto(photoId)
               }}
@@ -59,14 +67,24 @@ export default function Gallery({
               </span>
               <span className="absolute bottom-0 left-0 right-0 h-100 bg-linear-to-b from-black/0 via-black to-black"></span>
             </div>
-            <div className="flex gap-4 absolute z-10 top-0 right-0 p-4">
-                <ArrowUpTrayIcon className="h-6 w-6 hover:cursor-pointer" onClick={signUpload} />
-                <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
+            <div className="absolute right-0 top-0 z-10 flex gap-4 p-4">
+              <Upload
+                onUploadComplete={(uploadedImages) => {
+                  setGalleryImages((currentImages) => [
+                    ...uploadedImages,
+                    ...currentImages,
+                  ])
+                }}
+                onProgressChange={setUploadProgress}
+                onStatusChange={setUploadStatus}
+                onUploadingChange={setIsUploading}
+              />
+              <AdjustmentsHorizontalIcon className="h-6 w-6 hover:cursor-pointer" />
             </div>
             <h1 className="mb-4 mt-8 text-base font-bold uppercase tracking-widest">Photo Session Name</h1>
             <p className="max-w-[40ch] sm:max-w-[32ch]">Photo Session Description</p>
           </div>
-          {images.map(({ id, public_id, format, blurDataUrl }) => (
+          {displayedImages.map(({ id, public_id, format, blurDataUrl }) => (
             <Link
               key={id}
               href={`/?photoId=${id}`}
@@ -77,7 +95,7 @@ export default function Gallery({
                 alt="Next.js Conf photo"
                 className="transform rounded-lg brightness-90 transition will-change-auto group-hover:brightness-110"
                 style={{ transform: 'translate3d(0, 0, 0)' }}
-                placeholder="blur"
+                placeholder={blurDataUrl ? 'blur' : 'empty'}
                 blurDataURL={blurDataUrl}
                 src={`https://res.cloudinary.com/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload/c_scale,w_720/${public_id}.${format}`}
                 width={720}
