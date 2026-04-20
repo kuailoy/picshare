@@ -6,6 +6,58 @@ import { prisma } from '@/server/db/prisma'
 
 const showcaseAdminEmail = process.env.SHOWCASE_ADMIN_EMAIL?.trim().toLowerCase()
 const showcaseAdminPassword = process.env.SHOWCASE_ADMIN_PASSWORD
+const emailServer = process.env.EMAIL_SERVER
+const emailFrom = process.env.EMAIL_FROM
+
+const providers: NextAuthOptions['providers'] = [
+  CredentialsProvider({
+    id: 'credentials',
+    name: 'Showcase Admin',
+    credentials: {
+      email: { label: 'Email', type: 'email' },
+      password: { label: 'Password', type: 'password' },
+    },
+    async authorize(credentials) {
+      const email = credentials?.email?.trim().toLowerCase() ?? ''
+      const password = credentials?.password ?? ''
+
+      if (!showcaseAdminEmail || !showcaseAdminPassword) {
+        return null
+      }
+
+      if (email !== showcaseAdminEmail || password !== showcaseAdminPassword) {
+        return null
+      }
+
+      const user = await prisma.user.upsert({
+        where: { email: showcaseAdminEmail },
+        update: {
+          emailVerified: new Date(),
+        },
+        create: {
+          email: showcaseAdminEmail,
+          name: 'Showcase Admin',
+          emailVerified: new Date(),
+        },
+      })
+
+      return {
+        id: user.id,
+        email: user.email,
+        name: user.name ?? 'Showcase Admin',
+      }
+    },
+  }),
+]
+
+if (emailServer && emailFrom) {
+  providers.unshift(
+    EmailProvider({
+      server: emailServer,
+      from: emailFrom,
+    }),
+  )
+}
 
 export const authOptions: NextAuthOptions = {
   adapter: PrismaAdapter(prisma),
@@ -16,50 +68,7 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
   },
-  providers: [
-    EmailProvider({
-      server: process.env.EMAIL_SERVER,
-      from: process.env.EMAIL_FROM,
-    }),
-    CredentialsProvider({
-      id: 'credentials',
-      name: 'Showcase Admin',
-      credentials: {
-        email: { label: 'Email', type: 'email' },
-        password: { label: 'Password', type: 'password' },
-      },
-      async authorize(credentials) {
-        const email = credentials?.email?.trim().toLowerCase() ?? ''
-        const password = credentials?.password ?? ''
-
-        if (!showcaseAdminEmail || !showcaseAdminPassword) {
-          return null
-        }
-
-        if (email !== showcaseAdminEmail || password !== showcaseAdminPassword) {
-          return null
-        }
-
-        const user = await prisma.user.upsert({
-          where: { email: showcaseAdminEmail },
-          update: {
-            emailVerified: new Date(),
-          },
-          create: {
-            email: showcaseAdminEmail,
-            name: 'Showcase Admin',
-            emailVerified: new Date(),
-          },
-        })
-
-        return {
-          id: user.id,
-          email: user.email,
-          name: user.name ?? 'Showcase Admin',
-        }
-      },
-    }),
-  ],
+  providers,
   callbacks: {
     async jwt({ token, user }) {
       if (user) {
