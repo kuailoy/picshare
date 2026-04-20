@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
 import { signOut } from 'next-auth/react'
 
 type AuthMenuProps = {
@@ -8,6 +9,12 @@ type AuthMenuProps = {
 }
 
 export default function AuthMenu({ email }: AuthMenuProps) {
+  const pathname = usePathname()
+
+  if (pathname.startsWith('/share')) {
+    return null
+  }
+
   if (!email) {
     return (
       <Link
