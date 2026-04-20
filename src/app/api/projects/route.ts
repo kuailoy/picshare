@@ -49,6 +49,7 @@ export async function POST(request: Request) {
       },
       select: {
         id: true,
+        ownerId: true,
         name: true,
         slug: true,
         folder: true,

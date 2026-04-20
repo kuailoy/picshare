@@ -9,6 +9,7 @@ export interface GalleryImage {
 
 export type ProjectListItem = {
   id: string
+  ownerId?: string | null
   slug: string
   name: string
   description?: string | null
@@ -18,6 +19,7 @@ export type ProjectListItem = {
 
 export type ProjectDetail = {
   id: string
+  ownerId?: string | null
   slug: string
   name: string
   description?: string | null

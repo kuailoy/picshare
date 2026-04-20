@@ -11,6 +11,7 @@ export async function getProjects(): Promise<ProjectListItem[]> {
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
+      ownerId: true,
       slug: true,
       name: true,
       description: true,
@@ -34,6 +35,7 @@ export async function getProjects(): Promise<ProjectListItem[]> {
 
   return projects.map((project) => ({
     id: project.id,
+    ownerId: project.ownerId,
     slug: project.slug,
     name: project.name,
     description: project.description,
@@ -48,6 +50,7 @@ export async function getProjectBySlug(slug: string): Promise<ProjectDetail | nu
     where: { slug },
     select: {
       id: true,
+      ownerId: true,
       slug: true,
       name: true,
       description: true,
@@ -63,6 +66,7 @@ export async function getProjectByShareToken(token: string): Promise<ProjectDeta
     where: { shareToken: token },
     select: {
       id: true,
+      ownerId: true,
       slug: true,
       name: true,
       description: true,

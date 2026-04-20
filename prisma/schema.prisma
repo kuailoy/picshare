@@ -12,6 +12,9 @@ model Project {
   /// Internal unique identifier
   id String @id @default(cuid())
 
+  /// Owner user
+  ownerId String?
+
   /// Human-readable name
   name String
 
@@ -54,10 +57,126 @@ model Project {
   /// One-to-many relation
   images Image[]
 
+  /// Owner relation
+  owner User? @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+
   /// Optional cover image relation
   coverImage Image? @relation("ProjectCoverImage", fields: [coverImageId], references: [id], onDelete: SetNull)
 
   @@index([createdAt])
+  @@index([ownerId])
+}
+
+/// Represents an authenticated user
+model User {
+  /// Internal unique identifier
+  id String @id @default(cuid())
+
+  /// Login email
+  email String @unique
+
+  /// Verified email timestamp
+  emailVerified DateTime?
+
+  /// Display name
+  name String?
+
+  /// Avatar image
+  image String?
+
+  /// Created timestamp
+  createdAt DateTime @default(now())
+
+  /// Updated timestamp
+  updatedAt DateTime @updatedAt
+
+  /// Owned projects
+  projects Project[]
+
+  /// Auth.js linked accounts
+  accounts Account[]
+
+  /// Auth.js sessions
+  sessions Session[]
+}
+
+/// Auth.js account linkage
+model Account {
+  /// Internal unique identifier
+  id String @id @default(cuid())
+
+  /// Foreign key to User
+  userId String
+
+  /// Provider type
+  type String
+
+  /// Provider name
+  provider String
+
+  /// Provider account identifier
+  providerAccountId String
+
+  /// Refresh token
+  refresh_token String? @db.Text
+
+  /// Access token
+  access_token String? @db.Text
+
+  /// Token expiry
+  expires_at Int?
+
+  /// Token type
+  token_type String?
+
+  /// Request scope
+  scope String?
+
+  /// ID token
+  id_token String? @db.Text
+
+  /// Session state
+  session_state String?
+
+  /// User relation
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+}
+
+/// Auth.js session record
+model Session {
+  /// Internal unique identifier
+  id String @id @default(cuid())
+
+  /// Foreign key to User
+  userId String
+
+  /// Session expiry
+  expires DateTime
+
+  /// Session token
+  sessionToken String @unique
+
+  /// User relation
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+/// Auth.js email verification token
+model VerificationToken {
+  /// Identifier (email)
+  identifier String
+
+  /// Token string
+  token String @unique
+
+  /// Expiration time
+  expires DateTime
+
+  @@unique([identifier, token])
 }
 
 /// Represents an image within a project
